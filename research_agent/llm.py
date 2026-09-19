@@ -37,7 +37,7 @@ class LLMEngine:
             self._pipeline = pipeline(
                 "text-generation",
                 model=self.model_name,
-                torch_dtype="auto",
+                dtype="auto",
                 device_map=device if device == "cuda" else None,
             )
 
@@ -56,8 +56,6 @@ class LLMEngine:
             prompt,
             max_new_tokens=max_new_tokens,
             do_sample=False,
-            temperature=None,
-            top_p=None,
             return_full_text=False,
         )
         return outputs[0]["generated_text"].strip()

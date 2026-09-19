@@ -27,10 +27,16 @@ class RepoCandidate:
 
 
 def search_repositories(topic: str, limit: int = 5) -> list[RepoCandidate]:
-    """Search public GitHub repositories matching `topic`, best-starred first."""
+    """Search public GitHub repositories matching `topic`.
+
+    Deliberately omits `sort`/`order` so GitHub ranks by its own best-match
+    relevance score. Sorting by stars instead would surface popular-but-unrelated
+    repos ahead of small, actually-relevant ones -- the opposite of what a
+    research agent should do.
+    """
     resp = requests.get(
         f"{_API_ROOT}/search/repositories",
-        params={"q": topic, "sort": "stars", "order": "desc", "per_page": limit},
+        params={"q": topic, "per_page": limit},
         headers=_HEADERS,
         timeout=_TIMEOUT,
     )

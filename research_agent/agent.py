@@ -10,8 +10,9 @@ Example:
 
 from __future__ import annotations
 
+import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 
 from .github_search import fetch_readme, search_repositories
 from .llm import LLMEngine
@@ -39,6 +40,9 @@ class ProjectResult:
     stars: int
     relevance: str  # LLM-generated summary of fit for the query
 
+    def to_dict(self) -> dict:
+        return asdict(self)
+
 
 @dataclass
 class ResearchResult:
@@ -54,6 +58,28 @@ class ResearchResult:
         for p in self.projects:
             lines.append(f"\n- {p.name} ({p.stars}★) — {p.url}\n  {p.relevance}")
         return "\n".join(lines)
+
+    def to_dict(self) -> dict:
+        """The JSON contract consumed by the Java backend.
+
+        Shape:
+            {
+              "query": str,          # original user request
+              "topic": str,          # extracted search topic
+              "projects": [
+                {"name": str, "url": str, "stars": int, "relevance": str},
+                ...
+              ]
+            }
+        """
+        return {
+            "query": self.query,
+            "topic": self.topic,
+            "projects": [p.to_dict() for p in self.projects],
+        }
+
+    def to_json(self, **kwargs) -> str:
+        return json.dumps(self.to_dict(), ensure_ascii=False, **kwargs)
 
 
 def extract_topic(user_query: str) -> str:
